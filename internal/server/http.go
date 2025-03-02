@@ -13,7 +13,7 @@ func NewHttpServer(addr string) *http.Server {
 	r.HandleFunc("/", httpsrv.handleProduce).Methods("POST")
 	r.HandleFunc("/", httpsrv.handleConsume).Methods("GET")
 	return &http.Server{
-		Addr: addr,
+		Addr:    addr,
 		Handler: r,
 	}
 }
