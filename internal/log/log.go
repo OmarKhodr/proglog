@@ -4,10 +4,11 @@ import (
 	"io"
 	"os"
 	"path"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	"slices"
 
 	api "github.com/omarkhodr/proglog/api/v1"
 )
@@ -48,9 +49,7 @@ func (l *Log) setup() error {
 		baseOffsets = append(baseOffsets, off)
 	}
 
-	sort.Slice(baseOffsets, func(i, j int) bool {
-		return baseOffsets[i] < baseOffsets[j]
-	})
+	slices.Sort(baseOffsets)
 	for i := 0; i < len(baseOffsets); i++ {
 		if err = l.newSegment(baseOffsets[i]); err != nil {
 			return nil
