@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	log.Println("TODO: Implement distributed key-value log.")
+	log.Println("TODO: Implement distributed log.")
 }
