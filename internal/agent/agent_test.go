@@ -15,6 +15,7 @@ import (
 	"github.com/travisjeffery/go-dynaport"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 )
 
 func TestAgent(t *testing.T) {
@@ -60,6 +61,7 @@ func TestAgent(t *testing.T) {
 			ACLPolicyFile:   config.ACLPolicyFile,
 			ServerTLSConfig: serverTLSConfig,
 			PeerTLSConfig:   peerTLSConfig,
+			Bootstrap:       i == 0,
 		})
 		require.NoError(t, err)
 
@@ -106,26 +108,17 @@ func TestAgent(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, consumeResponse.Record.Value, []byte("foo"))
 
-	// Currently, adding this code to the test would make it fail, even though
-	// this is a reasonable assertion to make. There should only be one record
-	// in the leader's log.
-	//
-	// The problem with our implementation is that when one server discovers,
-	// another, they replicate each other in a cycle. We need to define a leader
-	// client and follower clients, so followers only copy from the leader.
-	// We'll implement this using consensus in Raft.
-	//
-	// consumeResponse, err = leaderClient.Consume(
-	// 	context.Background(),
-	// 	&api.ConsumeRequest{
-	// 		Offset: produceResponse.Offset + 1,
-	// 	},
-	// )
-	// require.Nil(t, consumeResponse)
-	// require.Error(t, err)
-	// got := status.Code(err)
-	// want := status.Code(api.ErrOffsetOutOfRange{}.GRPCStatus().Err())
-	// require.Equal(t, got, want)
+	consumeResponse, err = leaderClient.Consume(
+		context.Background(),
+		&api.ConsumeRequest{
+			Offset: produceResponse.Offset + 1,
+		},
+	)
+	require.Nil(t, consumeResponse)
+	require.Error(t, err)
+	got := status.Code(err)
+	want := status.Code(api.ErrOffsetOutOfRange{}.GRPCStatus().Err())
+	require.Equal(t, got, want)
 
 }
 
